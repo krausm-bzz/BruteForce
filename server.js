@@ -11,11 +11,48 @@ const BASE_LATENCY = 1000; // Grundlatenz in ms
 app.use(bodyParser.json());
 app.use(express.static('public')); // Statischer Ordner für HTML-Dateien
 
-// Einfache Datenbank mit Benutzername und Passwort (nur für Testzwecke)
 const users = {
     'user1': 'password123',
     'user2': 'secretPassword'
 };
+
+const string = {
+    digits: '0123456789',
+    ascii_letters: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    punctuation: '!@#$%^&*()_+-=[]{}|;:,.<>/?`~'
+};
+
+// Diese Funktion gibt immer die gleiche Zeichenliste zurück
+function getSymbols() {
+    return string.digits + string.ascii_letters + string.punctuation; // Zeichenliste mit allem
+}
+
+function generateCombinations(symbols, length) {
+    if (length === 1) {
+        return symbols.split('');
+    } else {
+        const combinations = [];
+        for (const symbol of symbols) {
+            for (const subCombination of generateCombinations(symbols, length - 1)) {
+                combinations.push(symbol + subCombination);
+            }
+        }
+        return combinations;
+    }
+}
+
+function bruteForce(password) {
+    const symbols = getSymbols();
+    for (let i = 1; i <= 14; i++) {
+        const combinations = generateCombinations(symbols, i);
+        for (const e of combinations) {
+            if (e === password) {
+                return e; // Passwort gefunden
+            }
+        }
+    }
+    return null; // Passwort nicht gefunden
+}
 
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
@@ -35,19 +72,27 @@ app.post('/login', (req, res) => {
         return res.json({ success: true });
     } else {
         // Fehlversuch zählen
-        loginAttempts[username]++;
+        loginAttempts++;
 
-        // Berechne die Latenz basierend auf der Anzahl der fehlgeschlagenen Versuche
         const latency = BASE_LATENCY * loginAttempts[username];
 
         if (loginAttempts[username] >= MAX_ATTEMPTS) {
             return res.json({ success: false, message: "Konto gesperrt" });
         } else {
-            // Antwort mit Verzögerung
             setTimeout(() => {
                 return res.json({ success: false, message: "Falsches Passwort" });
             }, latency);
         }
+    }
+});
+
+app.post('/bruteforce', (req, res) => {
+    const { password } = req.body;
+    const foundPassword = bruteForce(password);
+    if (foundPassword) {
+        return res.json({ success: true, foundPassword });
+    } else {
+        return res.json({ success: false, message: "Passwort nicht gefunden" });
     }
 });
 

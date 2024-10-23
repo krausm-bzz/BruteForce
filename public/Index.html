@@ -4,10 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel='stylesheet' href='style.css'>
-  <title>Login Test</title>
+  <title>Login und Brute-Force Test</title>
 </head>
 <body>
-<h1>Login Testseite</h1>
+<h1>Login und Brute-Force Testseite</h1>
+
+<h2>Login Formular</h2>
 <form id="loginForm">
   <label for="username">Benutzername:</label>
   <input type="text" id="username" name="username" required><br><br>
@@ -18,11 +20,22 @@
   <button type="submit">Einloggen</button>
 </form>
 
-<p id="message"></p>
+<p id="loginMessage"></p>
+
+<h2>Brute-Force Passwort Test</h2>
+<form id="bruteForceForm">
+  <label for="bfPassword">Passwort zum Brute-Forcen:</label>
+  <input type="text" id="bfPassword" name="bfPassword" required><br><br>
+
+  <button type="submit">Brute-Force Passwort Test</button>
+</form>
+
+<p id="bruteForceMessage"></p>
 
 <script>
+    // Login Formular
     document.getElementById('loginForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Verhindert das Neuladen der Seite
+        event.preventDefault();
 
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
@@ -36,7 +49,7 @@
         })
             .then(response => response.json())
             .then(data => {
-                const messageElement = document.getElementById('message');
+                const messageElement = document.getElementById('loginMessage');
                 if (data.success) {
                     messageElement.textContent = "Login erfolgreich!";
                     messageElement.style.color = "green";
@@ -46,6 +59,33 @@
                 }
             })
             .catch(err => console.error('Fehler beim Login:', err));
+    });
+
+    // Brute-Force Formular
+    document.getElementById('bruteForceForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const bfPassword = document.getElementById('bfPassword').value;
+
+        fetch('/bruteforce', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password: bfPassword })
+        })
+            .then(response => response.json())
+            .then(data => {
+                const messageElement = document.getElementById('bruteForceMessage');
+                if (data.success) {
+                    messageElement.textContent = `Passwort gefunden: ${data.foundPassword}`;
+                    messageElement.style.color = "green";
+                } else {
+                    messageElement.textContent = `Fehler: ${data.message}`;
+                    messageElement.style.color = "red";
+                }
+            })
+            .catch(err => console.error('Fehler beim Brute-Force:', err));
     });
 </script>
 </body>
