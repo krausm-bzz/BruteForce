@@ -53,6 +53,7 @@ const bruteForce = timer(function (password, difficulty = 3, knowsLength = false
     const symbols = difficultySetter(difficulty);
     for (let i = 1; i <= 14; i++) {
         for (const e of generateCombinations(symbols, i)) {
+
             if (e === password) {
                 console.log('password found');
                 return password;
