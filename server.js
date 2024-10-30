@@ -7,7 +7,6 @@ const port = 3001;
 app.use(bodyParser.json());
 app.use(express.static('public')); // Statischer Ordner für HTML-Dateien
 
-// Diese Funktion gibt immer die gleiche Zeichenliste zurück
 const string = {
     digits: '0123456789',
     ascii_letters: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
@@ -26,13 +25,14 @@ function difficultySetter(num) {
     }
 }
 
-function timer(originalFunction) {
-    return function (...args) {
-        const now = Date.now();
-        const result = originalFunction(...args);
-        console.log(`Time in ms: ${Date.now() - now}`);
-        return result;
-    };
+function generatePassword(length, difficulty = 2) {
+    const symbols = difficultySetter(difficulty);
+    let password = '';
+    for (let i = 0; i < length; i++) {
+        const randomSymbol = Math.floor(Math.random() * symbols.length);
+        password += symbols[randomSymbol];
+    }
+    return password;
 }
 
 function* generateCombinations(symbols, length) {
@@ -49,18 +49,30 @@ function* generateCombinations(symbols, length) {
     }
 }
 
-const bruteForce = timer(function (password, difficulty = 3, knowsLength = false) {
+// Lösung
+/*
+async function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}*/
+// Lösung
+
+const bruteForce = function (password, difficulty = 3) { // (async) Lösung
     const symbols = difficultySetter(difficulty);
+    const startTime = Date.now();
+
     for (let i = 1; i <= 14; i++) {
         for (const e of generateCombinations(symbols, i)) {
-
             if (e === password) {
-                console.log('password found');
-                return password;
+                const endTime = Date.now();
+                console.log('Password found:', e);
+                console.log(`Total time taken: ${endTime - startTime} ms`);
+                return e;
             }
+            //await delay(0); // Lösung
         }
     }
-});
+    console.log('Password not found');
+}
 
 app.post('/bruteforce', (req, res) => {
     const { password } = req.body;

@@ -26,15 +26,6 @@ function generatePassword(length, difficulty = 2) {
     return password;
 }
 
-function timer(originalFunction) {
-    return function (...args) {
-        const now = Date.now();
-        const result = originalFunction(...args);
-        console.log(`Time in ms: ${Date.now() - now}`);
-        return result;
-    };
-}
-
 function* generateCombinations(symbols, length) {
     if (length === 1) {
         for (const symbol of symbols) {
@@ -49,23 +40,33 @@ function* generateCombinations(symbols, length) {
     }
 }
 
-const bruteForce = timer(function (password, difficulty = 3, knowsLength = false) {
+// Lösung
+/*
+async function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}*/
+// Lösung
+
+const bruteForce = function (password, difficulty = 3) { // (async) Lösung
     const symbols = difficultySetter(difficulty);
+    const startTime = Date.now();
+
     for (let i = 1; i <= 14; i++) {
         for (const e of generateCombinations(symbols, i)) {
             if (e === password) {
-                console.log('password found');
-                return password;
+                const endTime = Date.now();
+                console.log('Password found:', e);
+                console.log(`Total time taken: ${endTime - startTime} ms`);
+                return e;
             }
+            //await delay(0); // Lösung
         }
     }
-});
-const randomPassword = generatePassword(5, 2);
+    console.log('Password not found');
+}
+
+const randomPassword = "22943";
 
 console.log(`Random Password: ${randomPassword}\n`);
-console.log('Without knowing password length:');
 bruteForce(randomPassword, 2);
 
-console.log('\n');
-console.log('With known password length:');
-bruteForce(randomPassword, 2, true);
