@@ -9,58 +9,19 @@
 <body>
 <h1>Login und Brute-Force Testseite</h1>
 
-<h2>Login Formular</h2>
-<form id="loginForm">
-  <label for="username">Benutzername:</label>
-  <input type="text" id="username" name="username" required><br><br>
-
-  <label for="password">Passwort:</label>
-  <input type="password" id="password" name="password" required><br><br>
-
-  <button type="submit">Einloggen</button>
-</form>
-
 <p id="loginMessage"></p>
 
 <h2>Brute-Force Passwort Test</h2>
 <form id="bruteForceForm">
   <label for="bfPassword">Passwort zum Brute-Forcen:</label>
-  <input type="text" id="bfPassword" name="bfPassword" required><br><br>
-
+  <input type="text" id="bfPassword" name="bfPassword" required>
+  <p>Vierstelliges Passwort (wegen dauer vom Bruteforce)</p>
   <button type="submit">Brute-Force Passwort Test</button>
 </form>
 
 <p id="bruteForceMessage"></p>
 
 <script>
-    // Login Formular
-    document.getElementById('loginForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        fetch('/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        })
-            .then(response => response.json())
-            .then(data => {
-                const messageElement = document.getElementById('loginMessage');
-                if (data.success) {
-                    messageElement.textContent = "Login erfolgreich!";
-                    messageElement.style.color = "green";
-                } else {
-                    messageElement.textContent = `Fehler: ${data.message}`;
-                    messageElement.style.color = "red";
-                }
-            })
-            .catch(err => console.error('Fehler beim Login:', err));
-    });
-
     // Brute-Force Formular
     document.getElementById('bruteForceForm').addEventListener('submit', function(event) {
         event.preventDefault();

@@ -60,12 +60,12 @@ const bruteForce = timer(function (password, difficulty = 3, knowsLength = false
         }
     }
 });
-const randomPassword = generatePassword(6, 1);
+const randomPassword = "leo"
 
 console.log(`Random Password: ${randomPassword}\n`);
 console.log('Without knowing password length:');
-bruteForce(randomPassword, 1);
+bruteForce(randomPassword, 2);
 
 console.log('\n');
 console.log('With known password length:');
-bruteForce(randomPassword, 1, true);
+bruteForce(randomPassword, 2, true);

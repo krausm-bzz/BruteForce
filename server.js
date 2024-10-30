@@ -4,84 +4,59 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = 3001;
 
-let loginAttempts = {}; // Speichert fehlgeschlagene Login-Versuche für Benutzer
-const MAX_ATTEMPTS = 5;
-const BASE_LATENCY = 1000; // Grundlatenz in ms
-
 app.use(bodyParser.json());
 app.use(express.static('public')); // Statischer Ordner für HTML-Dateien
 
-const users = {
-    'user1': 'password123',
-    'user2': 'secretPassword'
-};
-
+// Diese Funktion gibt immer die gleiche Zeichenliste zurück
 const string = {
     digits: '0123456789',
     ascii_letters: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
     punctuation: '!@#$%^&*()_+-=[]{}|;:,.<>/?`~'
 };
 
-// Diese Funktion gibt immer die gleiche Zeichenliste zurück
-function getSymbols() {
-    return string.digits + string.ascii_letters + string.punctuation; // Zeichenliste mit allem
+function difficultySetter(num) {
+    if (num === 0) {
+        return string.digits;
+    } else if (num === 1) {
+        return string.ascii_letters;
+    } else if (num === 2) {
+        return string.digits + string.ascii_letters;
+    } else {
+        return string.ascii_letters + string.digits + string.punctuation;
+    }
 }
 
-function generateCombinations(symbols, length) {
+function timer(originalFunction) {
+    return function (...args) {
+        const now = Date.now();
+        const result = originalFunction(...args);
+        console.log(`Time in ms: ${Date.now() - now}`);
+        return result;
+    };
+}
+
+function* generateCombinations(symbols, length) {
     if (length === 1) {
-        return symbols.split('');
+        for (const symbol of symbols) {
+            yield symbol;
+        }
     } else {
-        const combinations = [];
         for (const symbol of symbols) {
             for (const subCombination of generateCombinations(symbols, length - 1)) {
-                combinations.push(symbol + subCombination);
+                yield symbol + subCombination;
             }
         }
-        return combinations;
     }
 }
 
-function bruteForce(password) {
-    const symbols = getSymbols();
+const bruteForce = timer(function (password, difficulty = 3, knowsLength = false) {
+    const symbols = difficultySetter(difficulty);
     for (let i = 1; i <= 14; i++) {
-        const combinations = generateCombinations(symbols, i);
-        for (const e of combinations) {
+        for (const e of generateCombinations(symbols, i)) {
             if (e === password) {
-                return e; // Passwort gefunden
+                console.log('password found');
+                return password;
             }
-        }
-    }
-    return null; // Passwort nicht gefunden
-}
-
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-
-    if (!users[username]) {
-        return res.json({ success: false, message: "Benutzer nicht gefunden" });
-    }
-
-    if (!loginAttempts[username]) {
-        loginAttempts[username] = 0;
-    }
-
-    // Passwort prüfen
-    if (users[username] === password) {
-        // Bei erfolgreichem Login Zähler zurücksetzen
-        loginAttempts[username] = 0;
-        return res.json({ success: true });
-    } else {
-        // Fehlversuch zählen
-        loginAttempts++;
-
-        const latency = BASE_LATENCY * loginAttempts[username];
-
-        if (loginAttempts[username] >= MAX_ATTEMPTS) {
-            return res.json({ success: false, message: "Konto gesperrt" });
-        } else {
-            setTimeout(() => {
-                return res.json({ success: false, message: "Falsches Passwort" });
-            }, latency);
         }
     }
 });
