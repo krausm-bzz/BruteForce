@@ -49,14 +49,7 @@ function* generateCombinations(symbols, length) {
     }
 }
 
-// Lösung
-/*
-async function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}*/
-// Lösung
-
-const bruteForce = function (password, difficulty = 3) { // (async) Lösung
+const bruteForce = async function (password, difficulty = 3) {
     const symbols = difficultySetter(difficulty);
     const startTime = Date.now();
 
@@ -68,15 +61,15 @@ const bruteForce = function (password, difficulty = 3) { // (async) Lösung
                 console.log(`Total time taken: ${endTime - startTime} ms`);
                 return e;
             }
-            //await delay(0); // Lösung
         }
     }
     console.log('Password not found');
-}
+    return null;
+};
 
-app.post('/bruteforce', (req, res) => {
+app.post('/bruteforce', async (req, res) => { // make the handler async
     const { password } = req.body;
-    const foundPassword = bruteForce(password);
+    const foundPassword = await bruteForce(password); // wait for bruteForce result
     if (foundPassword) {
         return res.json({ success: true, foundPassword });
     } else {
